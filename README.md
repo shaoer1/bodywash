@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-本项目是一个专业的垂直领域模型训练与推理系统，专注于沐浴露瓶（哑光按压式洗护瓶）的文生图任务。系统集成了完整的模型训练、推理和管理功能，提供直观的Web可视化界面，实现了从数据准备到模型部署的全流程解决方案。
+本项目是一个专业的垂直领域模型训练与推理系统，专注于沐浴露瓶（的文生图任务。系统集成了完整的模型训练、推理和管理功能，提供直观的Web可视化界面，实现了从数据准备到模型部署的全流程解决方案。
 
 ### 核心功能
 
@@ -26,14 +26,6 @@
 | 模型压缩 | PEFT | 0.9.0 | LoRA 实现 |
 | 硬件加速 | CUDA | 11.8 | GPU 加速 |
 
-## 硬件要求
-
-| 配置 | 规格 |
-|------|------|
-| 最低 | NVIDIA RTX 3060/4060，≥10GB 显存，Windows 10/11 |
-| 推荐 | NVIDIA RTX 3090/4070/4080，≥16GB 显存 |
-
-> 10GB 显存需严格控制批次大小（Batch Size=1），关闭多余显存占用程序，避免显存溢出。
 
 ## 环境依赖
 
@@ -73,12 +65,8 @@ npm install
 ```bash
 # 克隆训练仓库
 git clone https://github.com/bmaltais/kohya_ss.git
-# 网络失败替换镜像：git clone https://gitee.com/mirrors/kohya_ss.git
-
 cd kohya_ss
-# 一键安装依赖、配置环境
-setup.bat
-```
+
 
 ## 项目结构
 
@@ -129,7 +117,7 @@ bodywash/
 python app.py
 
 # 方式二：使用启动脚本
-双击 "启动后端.bat"
+双击 "back.bat"
 ```
 
 #### 前端服务
@@ -144,13 +132,13 @@ cd vue-webui
 npm run build
 
 # 方式二：使用启动脚本
-双击 "启动前端.bat"
+双击 "front.bat"    
 ```
 
 ### 3. 访问系统
 
 - 后端 API：`http://localhost:5000`
-- 前端界面：`http://localhost:5173`（开发模式）或构建后的静态文件
+- 前端界面：`http://localhost:3000`或构建后的静态文件
 
 ## 使用教程
 
@@ -228,17 +216,6 @@ dataset/
 | 材质质感不佳 | 微调学习率，保证数据集光影材质统一 |
 | 模型加载失败 | 检查模型文件路径和完整性 |
 
-## 模型推理提示词
-
-### 正向提示词
-```
-masterpiece, best quality, high detail, plastic pump body wash bottle, matte curved container, pure white background, e-commerce product shot, soft studio lighting, clean minimalist style
-```
-
-### 反向提示词
-```
-text, logo, watermark, deformed, blurry, distorted, bad anatomy, messy background, transparent texture, complex patterns, extra parts, missing parts
-```
 
 ## 项目维护
 
@@ -257,18 +234,3 @@ npm update
 
 训练日志存储在 `output/logs/` 目录，按时间戳命名。定期清理旧日志以节省存储空间。
 
-## 贡献指南
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 许可证
-
-本项目采用 MIT 许可证。详见 LICENSE 文件。
-
-## 联系方式
-
-如有问题或建议，请通过 GitHub Issues 提交。
