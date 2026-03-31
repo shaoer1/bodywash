@@ -1,0 +1,58 @@
+# 虚拟环境
+venv/
+
+# 前端依赖
+vue-webui/node_modules/
+vue-webui/dist/
+
+# 训练输出
+output/
+
+# 模型文件
+model/*.ckpt
+model/*.safetensors
+
+# 生成的图片
+static/generated/
+
+# 日志文件
+logs/
+
+# 临时文件
+__pycache__/
+*.pyc
+
+# IDE 配置
+.vscode/
+.idea/
+
+# 操作系统文件
+Thumbs.db
+.DS_Store
+
+# 环境变量文件
+.env
+.env.local
+
+# 构建文件
+build/
+dist/
+
+# 测试文件
+pytest_cache/
+
+# 其他临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 数据库文件
+*.db
+*.sqlite
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar

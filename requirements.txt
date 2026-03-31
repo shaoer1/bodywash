@@ -1,0 +1,28 @@
+# 项目依赖配置
+# 注意：PyTorch 需单独安装，详见 README.md
+
+# 后端框架
+flask==3.0.3           # Web 框架
+flask-cors==4.0.0      # 跨域支持
+
+# 深度学习库
+transformers==4.38.2   #  transformer 模型库
+diffusers==0.27.2      # 扩散模型库
+accelerate==0.27.2     # 训练加速
+peft==0.9.0            # 参数高效微调（LoRA）
+safetensors==0.4.2     # 安全的模型权重存储
+
+# 图像处理
+Pillow==10.3.0         # 图像处理
+
+# 工具库
+tqdm==4.66.2           # 进度条
+omegaconf==2.3.0       # 配置管理
+huggingface_hub==0.21.4 # Hugging Face 模型 hub 交互
+requests==2.31.0       # HTTP 请求
+
+# 安装命令：
+# 1. 先安装 PyTorch
+# pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu118
+# 2. 再安装本文件依赖
+# pip install -r requirements.txt
