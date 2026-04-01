@@ -43,8 +43,8 @@
             </div>
           </div>
           <div class="fgroup">
-            <label>主体词（英文，加在最前）</label>
-            <input v-model="subject" placeholder="product bottle" />
+            <label>触发词（Trigger Word，放在第一位）</label>
+            <input v-model="trigger" placeholder="white" />
           </div>
           <div class="btn-row">
             <button class="btn-scan" @click="scanFolder" :disabled="!folder||scanning">{{ scanning ? '扫描中...' : '扫描预览' }}</button>
@@ -97,61 +97,28 @@
 </template>
 <script>
 const DEFAULT_MAP = [
-  {zh:'沐浴露',en:'body wash'},
-  {zh:'洗发水',en:'shampoo'},
-  {zh:'护发素',en:'conditioner'},
-  {zh:'洗手液',en:'hand soap'},
-  {zh:'乳液',en:'lotion'},
-  {zh:'面霜',en:'face cream'},
-  {zh:'精华',en:'serum'},
-  {zh:'洁面',en:'facial cleanser'},
-  {zh:'防晓',en:'sunscreen'},
-  {zh:'香水',en:'perfume'},
   {zh:'旋盖式',en:'screw cap'},
-  {zh:'压泵式',en:'pump dispenser'},
+  {zh:'泵头式',en:'pump dispenser'},
   {zh:'翻盖式',en:'flip cap'},
-  {zh:'喷雾式',en:'spray bottle'},
-  {zh:'挤压式',en:'squeeze bottle'},
-  {zh:'长方形',en:'rectangular'},
-  {zh:'圆形',en:'round'},
-  {zh:'椭圆形',en:'oval'},
-  {zh:'方形',en:'square'},
-  {zh:'圆柱形',en:'cylindrical'},
+  {zh:'沐浴露',en:'body wash'},
+  {zh:'修长',en:'tall and slender'},
   {zh:'矮胖',en:'short and wide'},
-  {zh:'扁平',en:'flat and wide'},
+  {zh:'均匀',en:'balanced proportion'},
   {zh:'白色',en:'white'},
   {zh:'黑色',en:'black'},
-  {zh:'透明',en:'transparent'},
+  {zh:'黄色',en:'yellow'},
   {zh:'红色',en:'red'},
   {zh:'蓝色',en:'blue'},
-  {zh:'绿色',en:'green'},
-  {zh:'金色',en:'gold'},
-  {zh:'银色',en:'silver'},
-  {zh:'粉色',en:'pink'},
-  {zh:'紫色',en:'purple'},
-  {zh:'橙色',en:'orange'},
-  {zh:'黄色',en:'yellow'},
-  {zh:'灰色',en:'gray'},
-  {zh:'米色',en:'beige'},
-  {zh:'棕色',en:'brown'},
-  {zh:'光泽',en:'glossy'},
-  {zh:'哑光',en:'matte'},
-  {zh:'磨砂',en:'frosted'},
-  {zh:'简约',en:'minimalist'},
-  {zh:'高端',en:'premium'},
-  {zh:'商业摄影',en:'product photography'},
-  {zh:'正面',en:'front view'},
-  {zh:'侧面',en:'side view'},
-  {zh:'特写',en:'close-up'},
 ];
 export default {
   name: 'LabelView',
   data() {
-    const saved = localStorage.getItem('label_map');
-    const mapRows = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_MAP));
-    return { folder:'',subject:'',items:[],scanning:false,running:false,
-      resultMsg:'',resultOk:false,mapRows,
+    return { folder:'',trigger:'',items:[],scanning:false,running:false,
+      resultMsg:'',resultOk:false,mapRows:[],
       browseOpen:false,browseCurrent:'D:\\\\',browseParent:'D:\\\\',browseEntries:[],browseDrives:[] };
+  },
+  async mounted() {
+    await this.loadMapFromServer();
   },
   methods: {
     async openBrowse(){this.browseOpen=true;await this.browseNav(this.folder||'D:\\\\');},
@@ -165,21 +132,40 @@ export default {
     confirmBrowse(){this.folder=this.browseCurrent;this.browseOpen=false;},
     addMapRow(){this.mapRows.push({zh:'',en:''});},
     delMapRow(idx){this.mapRows.splice(idx,1);},
-    saveMap(){
-      localStorage.setItem('label_map',JSON.stringify(this.mapRows));
-      this.resultMsg='映射表已保存';this.resultOk=true;
-      setTimeout(()=>{this.resultMsg='';},2000);
+    async loadMapFromServer(){
+      try{
+        const r=await fetch('/api/label_map',{method:'GET'});
+        const d=await r.json();
+        if(d.success){
+          this.mapRows=Object.entries(d.map).map(([zh,en])=>({zh,en}));
+        }
+      }catch(e){console.error('加载映射表失败:',e);}
     },
-    buildMapObj(){
+    async saveMap(){
       const obj={};
       for(const row of this.mapRows){if(row.zh&&row.en)obj[row.zh]=row.en;}
-      return obj;
+      try{
+        const r=await fetch('/api/label_map',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({map:obj})});
+        const d=await r.json();
+        if(d.success){
+          this.resultMsg='映射表已保存到服务器';
+          this.resultOk=true;
+        }else{
+          this.resultMsg='保存失败: '+(d.error||'未知错误');
+          this.resultOk=false;
+        }
+      }catch(e){
+        this.resultMsg='请求失败: '+e;
+        this.resultOk=false;
+      }
+      setTimeout(()=>{this.resultMsg='';},2000);
     },
     async scanFolder(){
       this.scanning=true;this.resultMsg='';
       try{
         const r=await fetch('/api/label/scan',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({folder:this.folder,subject:this.subject,map:this.buildMapObj()})});
+          body:JSON.stringify({folder:this.folder,trigger:this.trigger})});
         const d=await r.json();
         if(d.success)this.items=d.items;
         else{this.resultMsg=d.error||'扫描失败';this.resultOk=false;}
@@ -191,7 +177,7 @@ export default {
       this.running=true;this.resultMsg='';
       try{
         const r=await fetch('/api/label/run',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({folder:this.folder,subject:this.subject,map:this.buildMapObj()})});
+          body:JSON.stringify({folder:this.folder,trigger:this.trigger})});
         const d=await r.json();
         if(d.success){
           this.resultMsg='完成！已处理 '+d.count+' 张图片';
