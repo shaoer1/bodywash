@@ -30,6 +30,44 @@ DEFAULT_SETTINGS = {
     'inference_model': '',
 }
 
+# 映射表文件路径
+LABEL_MAP_FILE = os.path.join(BASE_DIR, 'label_map.json')
+
+# 默认映射表
+DEFAULT_LABEL_MAP = {
+    # 产品类型
+    '旋盖式': 'screw cap',
+    '泵头式': 'pump dispenser',
+    '翻盖式': 'flip cap',
+    # 产品品类
+    '沐浴露': 'body wash',
+    # 比例
+    '修长': 'tall and slender',
+    '矮胖': 'short and wide',
+    '均匀': 'balanced proportion',
+    # 颜色
+    '白色': 'white',
+    '黑色': 'black',
+    '黄色': 'yellow',
+    '红色': 'red',
+    '蓝色': 'blue',
+}
+
+def load_label_map():
+    """加载映射表"""
+    if os.path.exists(LABEL_MAP_FILE):
+        try:
+            with open(LABEL_MAP_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return DEFAULT_LABEL_MAP.copy()
+
+def save_label_map(data):
+    """保存映射表"""
+    with open(LABEL_MAP_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
 def load_settings():
     # Start from file; only use DEFAULT_SETTINGS for keys not present in file
     s = {}
@@ -843,6 +881,24 @@ def api_build_cmd_preview():
         return jsonify({'success': False, 'message': str(e)}), 400
 
 
+@app.route('/api/label_map', methods=['GET'])
+def api_get_label_map():
+    """获取映射表"""
+    return jsonify({'success': True, 'map': load_label_map()})
+
+
+@app.route('/api/label_map', methods=['POST'])
+def api_save_label_map():
+    """保存映射表"""
+    data = request.json or {}
+    map_data = data.get('map', {})
+    try:
+        save_label_map(map_data)
+        return jsonify({'success': True, 'message': '映射表已保存'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
 @app.route('/api/label/scan', methods=['POST'])
 def api_label_scan():
     """扫描文件夹内图片，返回预览列表"""
@@ -856,15 +912,14 @@ def api_label_scan():
     sys.path.insert(0, BASE_DIR)
     import importlib, label_tool
     importlib.reload(label_tool)
-    from label_tool import parse_filename_to_tags, build_caption
-    subject = data.get('subject', '')
-    custom_map = data.get('map', {})
-    if custom_map:
-        label_tool.ZH2EN.update(custom_map)
+    from label_tool import parse_filename_to_tags, build_caption_with_trigger
+    # 使用后端保存的映射表
+    label_tool.ZH2EN.update(load_label_map())
+    trigger_word = data.get('trigger', '')
     result = []
     for idx, name in enumerate(images, 1):
         tags = parse_filename_to_tags(name)
-        caption = build_caption(tags, subject)
+        caption = build_caption_with_trigger(tags, trigger_word)
         result.append({
             'idx': idx,
             'original': name,
@@ -882,7 +937,7 @@ def api_label_run():
     import shutil
     data = request.json or {}
     folder = data.get('folder', '')
-    subject = data.get('subject', '')
+    trigger_word = data.get('trigger', '')
     if not os.path.isdir(folder):
         return jsonify({'success': False, 'error': f'目录不存在: {folder}'})
     IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.webp', '.bmp'}
@@ -891,10 +946,9 @@ def api_label_run():
     sys.path.insert(0, BASE_DIR)
     import importlib, label_tool
     importlib.reload(label_tool)
-    from label_tool import parse_filename_to_tags, build_caption
-    custom_map = data.get('map', {})
-    if custom_map:
-        label_tool.ZH2EN.update(custom_map)
+    from label_tool import parse_filename_to_tags, build_caption_with_trigger
+    # 使用后端保存的映射表
+    label_tool.ZH2EN.update(load_label_map())
     done = []
     for idx, name in enumerate(images, 1):
         src = os.path.join(folder, name)
@@ -902,7 +956,7 @@ def api_label_run():
         new_img = os.path.join(folder, f'{idx:03d}{ext}')
         new_txt = os.path.join(folder, f'{idx:03d}.txt')
         tags = parse_filename_to_tags(name)
-        caption = build_caption(tags, subject)
+        caption = build_caption_with_trigger(tags, trigger_word)
         if src != new_img:
             shutil.move(src, new_img)
         with open(new_txt, 'w', encoding='utf-8') as f:
