@@ -29,7 +29,7 @@
 
 ## 环境依赖
 
-### 前置安装（必须手动完成）
+### 前置安装
 
 | 组件 | 版本要求 | 说明 |
 |------|----------|------|
@@ -47,7 +47,7 @@ python -m venv venv
 # 激活虚拟环境（Windows）
 venv\Scripts\activate
 
-# 安装 PyTorch（CUDA 11.8 专用版本，必须先装）
+# 安装 PyTorch（CUDA 11.8 专用版本）
 pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu118
 
 # 安装其余依赖
