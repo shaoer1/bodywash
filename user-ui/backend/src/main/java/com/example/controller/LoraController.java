@@ -39,8 +39,12 @@ public class LoraController {
         }
         
         int lastUnderscoreIndex = fileName.lastIndexOf('_');
-        if (lastUnderscoreIndex >= 0 && lastUnderscoreIndex < fileName.length() - 1) {
-            String triggerWord = fileName.substring(lastUnderscoreIndex + 1);
+        int lastDashIndex = fileName.lastIndexOf('-');
+        
+        int splitIndex = Math.max(lastUnderscoreIndex, lastDashIndex);
+        
+        if (splitIndex >= 0 && splitIndex < fileName.length() - 1) {
+            String triggerWord = fileName.substring(splitIndex + 1);
             int dotIndex = triggerWord.lastIndexOf('.');
             if (dotIndex >= 0) {
                 triggerWord = triggerWord.substring(0, dotIndex);

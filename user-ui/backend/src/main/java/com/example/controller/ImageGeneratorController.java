@@ -24,8 +24,17 @@ public class ImageGeneratorController {
 
     @PostMapping("/generate")
     public CompletableFuture<ImageResponse> generateImage(@RequestBody ImageRequest request) {
+        System.out.println("Received generate request: " + request.getPrompt() + ", " + request.getLoraModel());
         return imageGeneratorService.generateImage(request.getPrompt(), request.getLoraModel())
-                .thenApply(imageId -> new ImageResponse(imageId, "Generating image..."));
+                .thenApply(imageId -> {
+                    System.out.println("Image generation completed: " + imageId);
+                    return new ImageResponse(imageId, "Generating image...");
+                })
+                .exceptionally(ex -> {
+                    System.err.println("Error in generateImage: " + ex.getMessage());
+                    ex.printStackTrace();
+                    return new ImageResponse(null, "Error: " + ex.getMessage());
+                });
     }
 
     @GetMapping("/get/{imageId}")

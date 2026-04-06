@@ -5,8 +5,8 @@ import java.nio.file.*;
 import java.util.UUID;
 
 public class ImageStorageService {
-    private static final String CACHE_DIR = "D:\\train\\user-ui\\cache";
-    private static final String OUTPUT_DIR = "D:\\train\\user-ui\\output";
+    private static final String CACHE_DIR = "D:/train/user-ui/backend/cache";
+    private static final String OUTPUT_DIR = "D:/train/user-ui/backend/cache";
     private static final long IMAGE_EXPIRE_HOURS = 24;
 
     public static String saveImage(String sourcePath, String imageId) {
@@ -19,9 +19,17 @@ public class ImageStorageService {
             Path targetPath = Paths.get(OUTPUT_DIR, targetFileName);
             
             if (Files.exists(Paths.get(sourcePath))) {
+                // 如果源文件和目标文件相同，不需要复制
+                if (Paths.get(sourcePath).equals(targetPath)) {
+                    System.out.println("Image already at target location: " + targetPath);
+                    String imageUrl = "/cache/" + targetFileName;
+                    scheduleImageCleanup(targetPath);
+                    return imageUrl;
+                }
+                
                 Files.copy(Paths.get(sourcePath), targetPath, StandardCopyOption.REPLACE_EXISTING);
                 
-                String imageUrl = "/output/" + targetFileName;
+                String imageUrl = "/cache/" + targetFileName;
                 System.out.println("Image saved to: " + targetPath);
                 
                 scheduleImageCleanup(targetPath);

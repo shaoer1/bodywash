@@ -75,9 +75,9 @@ public class TranslationService {
             return "";
         }
         
-        int lastUnderscoreIndex = loraFileName.lastIndexOf('_');
-        if (lastUnderscoreIndex >= 0 && lastUnderscoreIndex < loraFileName.length() - 1) {
-            String triggerWord = loraFileName.substring(lastUnderscoreIndex + 1);
+        int lastHyphenIndex = loraFileName.lastIndexOf('-');
+        if (lastHyphenIndex >= 0 && lastHyphenIndex < loraFileName.length() - 1) {
+            String triggerWord = loraFileName.substring(lastHyphenIndex + 1);
             int dotIndex = triggerWord.lastIndexOf('.');
             if (dotIndex >= 0) {
                 triggerWord = triggerWord.substring(0, dotIndex);

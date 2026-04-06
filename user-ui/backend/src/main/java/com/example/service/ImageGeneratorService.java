@@ -52,25 +52,31 @@ public class ImageGeneratorService {
     @Async
     public CompletableFuture<String> generateImage(String prompt, String loraModel) {
         try {
+            System.out.println("Starting image generation: " + prompt + ", " + loraModel);
             Files.createDirectories(CACHE_DIR);
 
-            String translatedPrompt = promptTranslatorService.translateFixedPrompt(prompt);
-            String loraTriggerWord = promptTranslatorService.extractLoraTriggerWord(loraModel);
-            String finalPrompt = promptTranslatorService.buildFinalPrompt(translatedPrompt, loraTriggerWord);
+            // 前端已经处理过提示词，直接使用
+            String finalPrompt = prompt;
+            System.out.println("Final prompt: " + finalPrompt);
 
             String imageDataUrl = callPythonInference(finalPrompt, loraModel);
+            System.out.println("Python inference result: " + (imageDataUrl != null ? "success" : "failed"));
             if (imageDataUrl == null || imageDataUrl.isBlank()) {
                 return CompletableFuture.failedFuture(new RuntimeException("推理服务未返回图片"));
             }
 
             String imageId = UUID.randomUUID().toString().replace("-", "");
             saveDataUrlToPng(imageId, imageDataUrl);
+            System.out.println("Saved image: " + imageId);
 
             String imageUrl = "/api/image/file/" + imageId;
             putUrlToCache(imageId, imageUrl);
+            System.out.println("Cached image URL: " + imageUrl);
 
             return CompletableFuture.completedFuture(imageId);
         } catch (Exception e) {
+            System.err.println("Error in generateImage: " + e.getMessage());
+            e.printStackTrace();
             return CompletableFuture.failedFuture(e);
         }
     }

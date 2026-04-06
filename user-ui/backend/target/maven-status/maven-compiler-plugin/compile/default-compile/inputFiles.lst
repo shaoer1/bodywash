@@ -2,10 +2,10 @@ D:\train\user-ui\backend\src\main\java\com\example\config\RedisConfig.java
 D:\train\user-ui\backend\src\main\java\com\example\model\HealthResponse.java
 D:\train\user-ui\backend\src\main\java\com\example\modules\PythonServiceCaller.java
 D:\train\user-ui\backend\src\main\java\com\example\service\PromptTranslatorService.java
-D:\train\user-ui\backend\src\main\java\com\example\SimpleServer.java
 D:\train\user-ui\backend\src\main\java\com\example\model\ImageUrlResponse.java
 D:\train\user-ui\backend\src\main\java\com\example\modules\ImageStorageService.java
 D:\train\user-ui\backend\src\main\java\com\example\service\ImageGeneratorService.java
+D:\train\user-ui\backend\src\main\java\com\example\controller\MessageController.java
 D:\train\user-ui\backend\src\main\java\com\example\config\AsyncConfig.java
 D:\train\user-ui\backend\src\main\java\com\example\modules\RedisService.java
 D:\train\user-ui\backend\src\main\java\com\example\modules\TranslationService.java
@@ -13,5 +13,5 @@ D:\train\user-ui\backend\src\main\java\com\example\controller\LoraController.jav
 D:\train\user-ui\backend\src\main\java\com\example\model\ImageRequest.java
 D:\train\user-ui\backend\src\main\java\com\example\controller\ImageGeneratorController.java
 D:\train\user-ui\backend\src\main\java\com\example\ImageGeneratorApplication.java
-D:\train\user-ui\backend\src\main\java\com\example\ImprovedServer.java
 D:\train\user-ui\backend\src\main\java\com\example\model\ImageResponse.java
+D:\train\user-ui\backend\src\main\java\com\example\service\MessageService.java
