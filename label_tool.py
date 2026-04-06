@@ -15,29 +15,73 @@ from pathlib import Path
 
 # ── 中文关键词 → 英文 tag 映射表 ──────────────────────────────────────────
 ZH2EN = {
-    # 产品类型
-    '旋盖式': 'screw cap',
-    '旋盖': 'screw cap',
-    '泵头式': 'pump dispenser',
-    '泵头': 'pump dispenser',
-    '压泵式': 'pump dispenser',
-    '压泵': 'pump dispenser',
-    '翻盖式': 'flip cap',
-    '翻盖': 'flip cap',
-    '喷雾式': 'spray nozzle',
-    '喷雾': 'spray nozzle',
-    # 产品品类
-    '沐浴露': 'body wash',
-    # 比例
-    '修长': 'tall and slender',
-    '矮胖': 'short and wide',
-    '均匀': 'balanced proportion',
-    # 颜色
-    '白色': 'white',
-    '黑色': 'black',
-    '黄色': 'yellow',
-    '红色': 'red',
-    '蓝色': 'blue',
+    "旋盖式": "screw cap",
+    "压泵式": "pump dispenser",
+    "翻盖式": "flip cap",
+    "喷雾式": "spray bottle",
+    "挤压式": "squeeze bottle",
+    "沐浴露": "body wash",
+    "洗发水": "shampoo",
+    "护发素": "conditioner",
+    "洗手液": "hand soap",
+    "乳液": "lotion",
+    "面霜": "face cream",
+    "精华": "serum",
+    "洁面": "facial cleanser",
+    "防晒": "sunscreen",
+    "香水": "perfume",
+    "长方形": "rectangular",
+    "圆形": "round",
+    "椭圆形": "oval",
+    "方形": "square",
+    "圆柱形": "cylindrical",
+    "修长": "tall and slender",
+    "矮胖": "short and wide",
+    "扁平": "flat and wide",
+    "白色": "white",
+    "黑色": "black",
+    "透明": "transparent",
+    "红色": "red",
+    "蓝色": "blue",
+    "绿色": "green",
+    "金色": "gold",
+    "银色": "silver",
+    "粉色": "pink",
+    "紫色": "purple",
+    "橙色": "orange",
+    "黄色": "yellow",
+    "灰色": "gray",
+    "米色": "beige",
+    "棕色": "brown",
+    "背景颜色": "",
+    "纯色背景": "solid color background",
+    "白色背景": "white background",
+    "渐变背景": "gradient background",
+    "黑色背景": "black background",
+    "透明背景": "transparent background",
+    "视觉造型": "",
+    "产品类型": "",
+    "背景": "background",
+    "画面特征": "",
+    "光泽": "glossy",
+    "哑光": "matte",
+    "磨砂": "frosted",
+    "透明瓶身": "clear bottle body",
+    "金属质感": "metallic texture",
+    "简约": "minimalist",
+    "高端": "premium",
+    "清新": "fresh",
+    "商业摄影": "product photography",
+    "正面": "front view",
+    "侧面": "side view",
+    "三四视角": "three-quarter view",
+    "特写": "close-up",
+    "整体": "full product",
+    "测试中文": "test chinese",
+    "新测试": "new test",
+    "测试1": "test1",
+    "测试2": "test2",
+    "测试3": "test3"
 }
 
 IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.webp', '.bmp'}
@@ -50,26 +94,42 @@ def parse_filename_to_tags(filename: str) -> list[str]:
     stem = re.sub(r'^jimeng-\d{4}-\d{2}-\d{2}-\d{4}-', '', stem)
     stem = re.sub(r'^[a-zA-Z0-9_-]+-\d{6,}-', '', stem)  # 其他前缀
 
-    # 按分隔符拆分（中英文逗号、顿号、下划线、空格）
-    parts = re.split(r'[，,、_\s]+', stem)
+    # 预处理：把"背景颜色 XX色"合并为"XX色背景"
+    COLOR_MAP = {
+        '白色': 'white', '黑色': 'black', '透明': 'transparent',
+        '红色': 'red', '蓝色': 'blue', '绿色': 'green', '金色': 'gold',
+        '银色': 'silver', '粉色': 'pink', '紫色': 'purple', '灰色': 'gray',
+        '米色': 'beige', '棕色': 'brown', '橙色': 'orange', '黄色': 'yellow',
+    }
+    for zh_color, en_color in COLOR_MAP.items():
+        stem = re.sub(f'背景颜色\\s*{zh_color}', f'{en_color} background', stem)
+        stem = re.sub(f'背景\\s*{zh_color}', f'{en_color} background', stem)
+
+    # 按中文逗号、英文逗号分割
+    parts = re.split(r'[，,]+', stem)
 
     tags = []
     for part in parts:
         part = part.strip()
         if not part:
             continue
-        
-        # 按关键词长度排序，优先匹配较长的关键词
-        sorted_items = sorted(ZH2EN.items(), key=lambda x: len(x[0]), reverse=True)
-        
-        # 尝试匹配所有关键词
-        remaining = part
-        for zh, en in sorted_items:
-            if zh in remaining:
+        # 先尝试完整匹配
+        matched = False
+        for zh, en in ZH2EN.items():
+            if zh in part:
                 if en:  # 跳过空字符串映射
+                    remaining = part.replace(zh, '').strip()
                     tags.append(en)
-                    remaining = remaining.replace(zh, '').strip()
-    
+                    # 处理剩余部分
+                    if remaining:
+                        sub = parse_filename_to_tags(remaining)
+                        tags.extend(sub)
+                matched = True
+                break
+        if not matched:
+            # 保留有意义的纯英文/数字标签
+            if re.match(r'^[a-zA-Z0-9 _-]+$', part) and len(part) > 1:
+                tags.append(part.lower())
     # 去重保序
     seen = set()
     result = []
@@ -85,15 +145,6 @@ def build_caption(tags: list[str], subject: str = '') -> str:
     """组合成 LoRA 训练用的 caption"""
     if subject:
         core = [subject] + tags
-    else:
-        core = tags
-    return ', '.join(core)
-
-
-def build_caption_with_trigger(tags: list[str], trigger_word: str = '') -> str:
-    """组合成 LoRA 训练用的 caption，触发词放在第一位"""
-    if trigger_word:
-        core = [trigger_word] + tags
     else:
         core = tags
     return ', '.join(core)
@@ -141,7 +192,7 @@ def process_folder(folder: str, subject: str = '', dry_run: bool = False):
                 f.write(caption)
 
     if dry_run:
-        print('[预览模式] 未做任何修改，加 --run 参数执行实际操作')
+        print()
     else:
         print(f'完成！已处理 {len(images)} 张图片')
 
